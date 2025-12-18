@@ -13,6 +13,8 @@ import '../models/recurring_expense.dart';
 import '../models/user.dart';
 import '../models/vehicle.dart';
 import '../utils/constants.dart';
+import '../utils/migration_safety.dart';
+import '../utils/query_cache.dart';
 
 class DatabaseService {
   DatabaseService._init();
@@ -42,8 +44,24 @@ class DatabaseService {
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    // Wrap all migrations in a transaction to ensure atomicity
-    await db.transaction((txn) async {
+    // 🆕 PHASE 1: Wrap migrations with safety checks
+    await MigrationSafetyWrapper.executeSafeMigration(
+      db,
+      oldVersion,
+      newVersion,
+      (txn) async {
+        // All existing migration code wrapped in transaction
+        await _performMigrations(txn, oldVersion, newVersion);
+      },
+    );
+  }
+
+  // 🆕 Extract migration logic for better organization
+  Future<void> _performMigrations(
+    Transaction txn,
+    int oldVersion,
+    int newVersion,
+  ) async {
       // Version 2: Add sharing and collaboration features
       if (oldVersion < 2) {
         // Add is_shared column to vehicles
@@ -1192,7 +1210,7 @@ class DatabaseService {
 
         debugPrint('✅ Receipt OCR tables created successfully');
       }
-    }); // Close transaction
+    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -1945,10 +1963,17 @@ class DatabaseService {
     return result.map((json) => Vehicle.fromMap(json)).toList();
   }
 
+  // 🆕 PHASE 2: Added query caching
   Future<List<Vehicle>> getAllVehicles() async {
-    final db = await database;
-    final result = await db.query('vehicles', orderBy: 'created_at DESC');
-    return result.map((json) => Vehicle.fromMap(json)).toList();
+    return QueryCache.instance.getOrFetch(
+      CacheKeys.vehicles(),
+      () async {
+        final db = await database;
+        final result = await db.query('vehicles', orderBy: 'created_at DESC');
+        return result.map((json) => Vehicle.fromMap(json)).toList();
+      },
+      ttl: const Duration(minutes: 5),
+    );
   }
 
   Future<Vehicle?> getVehicle(int id) async {
@@ -2046,13 +2071,20 @@ class DatabaseService {
   }
 
   // Get all fuel expenses (single account, all devices)
+  // 🆕 PHASE 2: Added query caching
   Future<List<FuelExpense>> getAllFuelExpenses() async {
-    final db = await database;
-    final result = await db.query(
-      'fuel_expenses',
-      orderBy: 'date DESC',
+    return QueryCache.instance.getOrFetch(
+      CacheKeys.fuelExpenses(),
+      () async {
+        final db = await database;
+        final result = await db.query(
+          'fuel_expenses',
+          orderBy: 'date DESC',
+        );
+        return result.map((json) => FuelExpense.fromMap(json)).toList();
+      },
+      ttl: const Duration(minutes: 5),
     );
-    return result.map((json) => FuelExpense.fromMap(json)).toList();
   }
 
   // Get fuel expenses by device
@@ -2107,12 +2139,16 @@ class DatabaseService {
     }
 
     final db = await database;
-    return db.update(
+    // 🆕 PHASE 2: Invalidate cache after update
+    final result = await db.update(
       'fuel_expenses',
       expense.toMap(),
       where: 'id = ?',
       whereArgs: [expense.id],
     );
+    QueryCache.instance.invalidatePattern('fuel_expenses');
+    QueryCache.instance.invalidatePattern('vehicle_${expense.vehicleId}');
+    return result;
   }
 
   Future<int> deleteFuelExpense(int id, String? deviceId) async {
@@ -2143,12 +2179,19 @@ class DatabaseService {
     }
 
     final db = await database;
-    return db.delete(
+    // 🆕 PHASE 2: Invalidate cache after delete
+    // Get expense first to know which vehicle cache to invalidate
+    final expense = await getFuelExpense(id);
+    final result = await db.delete(
       'fuel_expenses',
       where: 'id = ?',
       whereArgs: [id],
     );
-  }
+    QueryCache.instance.invalidatePattern('fuel_expenses');
+    if (expense != null) {
+      QueryCache.instance.invalidatePattern('vehicle_${expense.vehicleId}');
+    }
+    return result;
 
   Future<FuelExpense?> getLastFuelExpense(int vehicleId) async {
     final db = await database;
@@ -2297,13 +2340,20 @@ class DatabaseService {
   }
 
   // Get all general expenses (single account, all devices)
+  // 🆕 PHASE 2: Added query caching
   Future<List<GeneralExpense>> getAllGeneralExpenses() async {
-    final db = await database;
-    final result = await db.query(
-      'general_expenses',
-      orderBy: 'date DESC',
+    return QueryCache.instance.getOrFetch(
+      CacheKeys.generalExpenses(),
+      () async {
+        final db = await database;
+        final result = await db.query(
+          'general_expenses',
+          orderBy: 'date DESC',
+        );
+        return result.map((json) => GeneralExpense.fromMap(json)).toList();
+      },
+      ttl: const Duration(minutes: 5),
     );
-    return result.map((json) => GeneralExpense.fromMap(json)).toList();
   }
 
   Future<List<GeneralExpense>> getGeneralExpensesPaginated({
@@ -2441,12 +2491,18 @@ class DatabaseService {
     }
 
     final db = await database;
-    return db.update(
+    // 🆕 PHASE 2: Invalidate cache after update
+    final result = await db.update(
       'general_expenses',
       expense.toMap(),
       where: 'id = ?',
       whereArgs: [expense.id],
     );
+    QueryCache.instance.invalidatePattern('general_expenses');
+    if (expense.vehicleId != null) {
+      QueryCache.instance.invalidatePattern('vehicle_${expense.vehicleId}');
+    }
+    return result;
   }
 
   Future<int> deleteGeneralExpense(int id, String? deviceId) async {
@@ -2479,11 +2535,20 @@ class DatabaseService {
     }
 
     final db = await database;
-    return db.delete(
+    // 🆕 PHASE 2: Invalidate cache after delete
+    final result = await db.delete(
       'general_expenses',
       where: 'id = ?',
       whereArgs: [id],
     );
+    QueryCache.instance.invalidatePattern('general_expenses');
+    if (deviceId != null) {
+      final expense = await getGeneralExpense(id);
+      if (expense?.vehicleId != null) {
+        QueryCache.instance.invalidatePattern('vehicle_${expense!.vehicleId}');
+      }
+    }
+    return result;
   }
 
   // ==================== ANALYTICS OPERATIONS ====================

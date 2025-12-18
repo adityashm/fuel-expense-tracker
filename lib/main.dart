@@ -33,9 +33,14 @@ import 'services/notification_service.dart';
 import 'services/sync_service.dart';
 import 'utils/app_localizations.dart';
 import 'utils/app_theme.dart';
+import 'utils/query_cache.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 🆕 PHASE 1: Initialize query cache system
+  QueryCache.instance.initialize();
+  debugPrint('✅ Query cache initialized');
 
   await runZonedGuarded(() async {
     try {
