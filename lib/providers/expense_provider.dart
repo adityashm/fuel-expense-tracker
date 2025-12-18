@@ -21,8 +21,14 @@ class ExpenseProvider extends ChangeNotifier {
   int _currentOffset = 0;
   bool _hasMoreData = true;
   
-  // 🆕 PHASE 3: Optimistic update manager
-  final _optimisticManager = OptimisticUpdateManager();
+  // 🆕 PHASE 3: Optimistic update managers
+  late final OptimisticUpdateManager<FuelExpense> _fuelOptimisticManager;
+  late final OptimisticUpdateManager<GeneralExpense> _generalOptimisticManager;
+
+  ExpenseProvider() {
+    _fuelOptimisticManager = OptimisticUpdateManager<FuelExpense>(_fuelExpenses);
+    _generalOptimisticManager = OptimisticUpdateManager<GeneralExpense>(_generalExpenses);
+  }
 
   List<FuelExpense> get fuelExpenses => _fuelExpenses;
   List<GeneralExpense> get generalExpenses => _generalExpenses;
