@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1051536576610",
+    "project_id": "expense-3fc99",
+    "storage_bucket": "expense-3fc99.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051536576610:android:c023cf711646525a53413b",
+        "android_client_info": {
+          "package_name": "com.fueltracker.fuel_expense_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEyv3UDFCzRgnKBPHIdvzJ3ifQa0S1apE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

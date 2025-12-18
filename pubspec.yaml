@@ -1,0 +1,109 @@
+name: fuel_expense_tracker
+description: A personal fuel and expense tracker app for Indian users with OCR receipt scanning
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # Database
+  sqflite: ^2.3.0
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  
+  # Firebase - CRITICAL FIX #3: Pinned versions
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.16.0
+  cloud_firestore: ^4.17.5
+  firebase_storage: ^11.6.5
+  firebase_messaging: ^14.7.10
+  firebase_crashlytics: ^3.5.7
+  firebase_analytics: ^10.10.7
+  
+  # OCR - Updated for Android SDK 36 compatibility
+  google_mlkit_text_recognition: ^0.13.0
+  
+  # Image handling
+  image_picker: ^1.1.2
+  camera: ^0.10.6
+  image: ^4.2.6
+  flutter_image_compress: ^2.3.0
+  
+  # Charts
+  fl_chart: ^0.67.0
+  syncfusion_flutter_charts: ^28.1.38
+  
+  # State Management
+  provider: ^6.0.0
+  cached_network_image: ^3.3.1
+  flutter_cache_manager: ^3.3.1
+  
+  # Preferences & Storage
+  shared_preferences: ^2.2.0
+  
+  # Notifications
+  flutter_local_notifications: ^17.2.1
+  
+  # Location & Geocoding
+  geolocator: ^9.0.0
+  geocoding: ^2.0.0
+  
+  # Networking
+  http: ^1.1.0
+  
+  # Export & Reporting
+  csv: ^5.0.0
+  excel: ^4.0.6
+  pdf: ^3.10.0
+  printing: ^5.10.0
+  share_plus: ^7.0.0
+  permission_handler: ^11.3.1
+  connectivity_plus: ^5.0.2
+  encrypt: ^5.0.3
+  
+  # Fonts
+  google_fonts: ^5.0.0
+  
+  # Localization
+  intl: ^0.20.0
+  
+  # File handling
+  file_picker: ^10.3.7
+  flutter_secure_storage: ^8.0.0
+  
+  # V2.5 Voice Entry
+  speech_to_text: ^6.6.0
+  
+  # V2.5 Haptic Feedback (built into Flutter, no package needed)
+  # V2.5 Animations (using built-in Flutter animations)
+
+  uuid: any
+  timezone: any
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+  integration_test:
+    sdk: flutter
+
+  mockito: any
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - fonts/
+
+# Build optimization notes:
+# To build a smaller APK:
+# flutter build apk --release --target-platform android-arm64
+# Or for split APKs by architecture:
+# flutter build apk --release --split-per-abi
+

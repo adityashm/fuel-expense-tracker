@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shortcut labels -->
+    <string name="shortcut_add_expense_short">Add Expense</string>
+    <string name="shortcut_add_expense_long">Add New Expense</string>
+    
+    <string name="shortcut_voice_short">Voice Add</string>
+    <string name="shortcut_voice_long">Add by Voice</string>
+    
+    <string name="shortcut_scan_short">Scan Receipt</string>
+    <string name="shortcut_scan_long">Scan Receipt with Camera</string>
+    
+    <string name="shortcut_reports_short">Reports</string>
+    <string name="shortcut_reports_long">View Expense Reports</string>
+    
+    <string name="shortcut_disabled_message">Shortcut is currently disabled</string>
+    
+    <!-- Widget labels -->
+    <string name="widget_quick_add">Quick Add Expense</string>
+    <string name="widget_description">Quick access to add expenses</string>
+</resources>

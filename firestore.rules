@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // CRITICAL FIX: Secure nested user data structure
+    // All user data is stored under /users/{userId}/...
+    match /users/{userId} {
+      // User can only access their own data
+      allow read, write: if isOwner(userId);
+      
+      // Devices subcollection
+      match /devices/{deviceId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Vehicles subcollection
+      match /vehicles/{vehicleId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Fuel expenses subcollection - SECURED
+      match /fuel_expenses/{expenseId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isOwner(userId);
+      }
+      
+      // General expenses subcollection - SECURED
+      match /general_expenses/{expenseId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isOwner(userId);
+      }
+      
+      // Trips subcollection
+      match /trips/{tripId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // Legacy top-level collections (for backward compatibility)
+    // These should not be used - all new data goes under /users/{userId}/
+    match /devices/{deviceId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /vehicles/{vehicleId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /fuel_expenses/{expenseId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /general_expenses/{expenseId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Vehicle access
+    match /vehicle_access/{accessId} {
+      allow read: if isAuthenticated();
+      allow write: if hasVehicleAccess(resource.data.vehicle_id, 'owner');
+    }
+    
+    // Maintenance records
+    match /maintenance_records/{recordId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.device_id) ||
+                                hasVehicleAccess(resource.data.vehicle_id, 'owner');
+    }
+    
+    // Activity logs (immutable)
+    match /activity_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+    
+    // Community posts
+    match /community_posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.device_id);
+    }
+    
+    // Settlements
+    match /settlements/{settlementId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isOwner(resource.data.created_by_device_id);
+    }
+    
+    // Budgets
+    match /budgets/{budgetId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(resource.data.device_id);
+    }
+    
+    // Reminders
+    match /reminders/{reminderId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(resource.data.device_id);
+    }
+    
+    // Trips
+    match /trips/{tripId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(resource.data.device_id);
+    }
+    
+    // Device connections
+    match /device_connections/{connectionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // Integration tokens
+    match /integration_tokens/{tokenId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(resource.data.device_id);
+    }
+    
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

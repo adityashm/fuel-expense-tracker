@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Quick Add Expense Shortcut -->
+    <shortcut
+        android:shortcutId="add_expense"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_add_expense_short"
+        android:shortcutLongLabel="@string/shortcut_add_expense_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled_message">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.fuel_expense_tracker"
+            android:targetClass="com.example.fuel_expense_tracker.MainActivity">
+            <extra android:name="route" android:value="/add-expense" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <!-- Voice Entry Shortcut -->
+    <shortcut
+        android:shortcutId="voice_entry"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_voice_short"
+        android:shortcutLongLabel="@string/shortcut_voice_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled_message">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.fuel_expense_tracker"
+            android:targetClass="com.example.fuel_expense_tracker.MainActivity">
+            <extra android:name="route" android:value="/voice-entry" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <!-- Scan Receipt Shortcut -->
+    <shortcut
+        android:shortcutId="scan_receipt"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_scan_short"
+        android:shortcutLongLabel="@string/shortcut_scan_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled_message">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.fuel_expense_tracker"
+            android:targetClass="com.example.fuel_expense_tracker.MainActivity">
+            <extra android:name="route" android:value="/scan-receipt" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <!-- View Reports Shortcut -->
+    <shortcut
+        android:shortcutId="view_reports"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_reports_short"
+        android:shortcutLongLabel="@string/shortcut_reports_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled_message">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.fuel_expense_tracker"
+            android:targetClass="com.example.fuel_expense_tracker.MainActivity">
+            <extra android:name="route" android:value="/reports" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+</shortcuts>
