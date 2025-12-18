@@ -6,8 +6,6 @@ import '../models/payment.dart';
 import '../models/recurring_expense.dart';
 import '../services/database_service.dart';
 import '../utils/constants.dart';
-// 🆕 PHASE 3: Import optimistic update manager
-import '../utils/data_consistency.dart';
 
 class ExpenseProvider extends ChangeNotifier {
   List<FuelExpense> _fuelExpenses = [];
@@ -21,14 +19,7 @@ class ExpenseProvider extends ChangeNotifier {
   int _currentOffset = 0;
   bool _hasMoreData = true;
   
-  // 🆕 PHASE 3: Optimistic update managers
-  late final OptimisticUpdateManager<FuelExpense> _fuelOptimisticManager;
-  late final OptimisticUpdateManager<GeneralExpense> _generalOptimisticManager;
 
-  ExpenseProvider() {
-    _fuelOptimisticManager = OptimisticUpdateManager<FuelExpense>(_fuelExpenses);
-    _generalOptimisticManager = OptimisticUpdateManager<GeneralExpense>(_generalExpenses);
-  }
 
   List<FuelExpense> get fuelExpenses => _fuelExpenses;
   List<GeneralExpense> get generalExpenses => _generalExpenses;

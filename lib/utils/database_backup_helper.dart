@@ -19,6 +19,7 @@ class DatabaseBackupHelper {
 
       // Copy database file
       final sourceFile = File(sourcePath);
+      // ignore: avoid_slow_async_io
       if (await sourceFile.exists()) {
         await sourceFile.copy(backupPath);
         debugPrint('✅ Database backup created: $backupPath');
@@ -38,6 +39,7 @@ class DatabaseBackupHelper {
       final targetPath = join(dbPath, 'fuel_tracker.db');
 
       final backupFile = File(backupPath);
+      // ignore: avoid_slow_async_io
       if (await backupFile.exists()) {
         await backupFile.copy(targetPath);
         debugPrint('✅ Database restored from backup: $backupPath');

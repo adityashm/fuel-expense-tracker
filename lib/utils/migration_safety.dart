@@ -164,7 +164,7 @@ class MigrationHelpers {
 
   /// Get current database version
   static Future<int> getCurrentVersion(Database db) async {
-    return await db.getVersion();
+    return db.getVersion();
   }
 
   /// Validate foreign key constraints

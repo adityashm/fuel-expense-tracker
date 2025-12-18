@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 
 /// Prevents race conditions in async operations
 class OperationLock {
@@ -63,10 +62,10 @@ class DataConsistencyService {
 
 /// Optimistic update manager
 class OptimisticUpdateManager<T> {
+  OptimisticUpdateManager(this._items);
+
   final List<T> _items;
   final Map<String, T> _pendingUpdates = {};
-
-  OptimisticUpdateManager(this._items);
 
   /// Add item optimistically
   void addOptimistic(String tempId, T item) {

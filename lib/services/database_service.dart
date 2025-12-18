@@ -1,6 +1,6 @@
-// ignore_for_file: unused_element
-
 import 'dart:developer' as developer;
+
+// ignore_for_file: unused_element
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
@@ -1213,7 +1213,6 @@ class DatabaseService {
         debugPrint('✅ Receipt OCR tables created successfully');
       }
     }
-  }
 
   Future _createDB(Database db, int version) async {
     const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
@@ -2195,6 +2194,8 @@ class DatabaseService {
     }
     return result;
 
+  }
+
   Future<FuelExpense?> getLastFuelExpense(int vehicleId) async {
     final db = await database;
     final result = await db.query(
@@ -2386,28 +2387,42 @@ class DatabaseService {
     return result.map((json) => GeneralExpense.fromMap(json)).toList();
   }
 
+  // 🆕 PHASE 2: Added query caching
   Future<List<GeneralExpense>> getGeneralExpensesByVehicle(
     int vehicleId,
   ) async {
-    final db = await database;
-    final result = await db.query(
-      'general_expenses',
-      where: 'vehicle_id = ?',
-      whereArgs: [vehicleId],
-      orderBy: 'date DESC',
+    return QueryCache.instance.getOrFetch(
+      CacheKeys.generalExpensesByVehicle(vehicleId),
+      () async {
+        final db = await database;
+        final result = await db.query(
+          'general_expenses',
+          where: 'vehicle_id = ?',
+          whereArgs: [vehicleId],
+          orderBy: 'date DESC',
+        );
+        return result.map((json) => GeneralExpense.fromMap(json)).toList();
+      },
+      ttl: const Duration(minutes: 5),
     );
-    return result.map((json) => GeneralExpense.fromMap(json)).toList();
   }
 
   // Get all household expenses (single account, all devices)
+  // 🆕 PHASE 2: Added query caching
   Future<List<GeneralExpense>> getAllHouseholdExpenses() async {
-    final db = await database;
-    final result = await db.query(
-      'general_expenses',
-      where: 'is_household_expense = 1',
-      orderBy: 'date DESC',
+    return QueryCache.instance.getOrFetch(
+      CacheKeys.householdExpenses(),
+      () async {
+        final db = await database;
+        final result = await db.query(
+          'general_expenses',
+          where: 'is_household_expense = 1',
+          orderBy: 'date DESC',
+        );
+        return result.map((json) => GeneralExpense.fromMap(json)).toList();
+      },
+      ttl: const Duration(minutes: 5),
     );
-    return result.map((json) => GeneralExpense.fromMap(json)).toList();
   }
 
   // Get household expenses by device

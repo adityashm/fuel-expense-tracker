@@ -128,8 +128,11 @@ class CacheKeys {
   static String generalExpenses({int? vehicleId, int? offset}) =>
       'general_expenses_${vehicleId ?? 'all'}_$offset';
 
+  static String generalExpensesByVehicle(int vehicleId) =>
+      'general_expenses_vehicle_$vehicleId';
+
   static String householdExpenses({int? offset}) =>
-      'household_expenses_$offset';
+      'household_expenses_${offset ?? 'all'}';
 
   static String vehicles([String? deviceId]) =>
       'vehicles_${deviceId ?? 'all'}';

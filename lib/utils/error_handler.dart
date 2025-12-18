@@ -234,11 +234,6 @@ class ErrorHandler {
     return false;
   }
 
-  /// Convert technical errors to user-friendly messages (legacy method)
-  static String _getUserFriendlyMessage(Object error) {
-    return instance.getUserMessage(error);
-  }
-  
   // Keep existing _getUserFriendlyMessage method for compatibility
   static String getUserFriendlyMessageLegacy(Object error) {
     if (error is DatabaseException) {

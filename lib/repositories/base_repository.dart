@@ -70,8 +70,7 @@ abstract class BaseRepository<T> extends DatabaseProvider {
   /// Create new record
   Future<T> create(T entity) async {
     final db = await database;
-    final map = toMap(entity);
-    map.remove('id'); // Remove ID for insert
+    final map = toMap(entity)..remove('id'); // Remove ID for insert
 
     final id = await db.insert(tableName, map);
 
@@ -134,8 +133,7 @@ abstract class BaseRepository<T> extends DatabaseProvider {
     final batch = db.batch();
 
     for (final entity in entities) {
-      final map = toMap(entity);
-      map.remove('id');
+      final map = toMap(entity)..remove('id');
       batch.insert(tableName, map);
     }
 
