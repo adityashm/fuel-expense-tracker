@@ -12,6 +12,8 @@ import '../providers/expense_provider.dart';
 import '../screens/template_manager_screen.dart';
 import '../services/database_service.dart';
 import '../services/template_service.dart';
+import '../utils/app_localizations.dart';
+import '../utils/error_handler.dart';
 
 class QuickAddTemplateWidget extends StatefulWidget {
   const QuickAddTemplateWidget({super.key});
@@ -291,20 +293,27 @@ class _QuickAddTemplateWidgetState extends State<QuickAddTemplateWidget> {
     DeviceProvider deviceProvider,
     ExpenseProvider expenseProvider,
   ) async {
+    // Get localization before async operations
+    final localizations = AppLocalizations.of(context);
+    
     // Get current odometer from vehicle
     final db = DatabaseService.instance;
-    final vehicleMap = await db.database.then(
-      (db) => db.query(
-        'vehicles',
-        where: 'id = ?',
-        whereArgs: [template.vehicleId],
-        limit: 1,
-      ),
+    final database = await db.database;
+    final vehicleMap = await database.query(
+      'vehicles',
+      where: 'id = ?',
+      whereArgs: [template.vehicleId],
+      limit: 1,
     );
 
-    if (vehicleMap.isEmpty) throw Exception('Vehicle not found');
+    if (vehicleMap.isEmpty) {
+      throw ValidationError(localizations.translate('vehicle_not_found'));
+    }
 
     final vehicle = Vehicle.fromMap(vehicleMap.first);
+    final notes = localizations
+        .translate('quick_added_from_template')
+        .replaceAll('{name}', template.name);
 
     final expense = FuelExpense(
       deviceId: deviceProvider.currentDevice!.deviceId,
@@ -316,7 +325,7 @@ class _QuickAddTemplateWidgetState extends State<QuickAddTemplateWidget> {
       odometerReading: vehicle.currentOdometer,
       pumpName: template.stationName,
       location: template.location,
-      notes: 'Quick-added from template: ${template.name}',
+      notes: notes,
     );
 
     await expenseProvider.createFuelExpense(expense);
@@ -327,19 +336,26 @@ class _QuickAddTemplateWidgetState extends State<QuickAddTemplateWidget> {
     DeviceProvider deviceProvider,
     ExpenseProvider expenseProvider,
   ) async {
+    // Get localization before async operations
+    final localizations = AppLocalizations.of(context);
+    
     final db = DatabaseService.instance;
-    final vehicleMap = await db.database.then(
-      (db) => db.query(
-        'vehicles',
-        where: 'id = ?',
-        whereArgs: [template.vehicleId],
-        limit: 1,
-      ),
+    final database = await db.database;
+    final vehicleMap = await database.query(
+      'vehicles',
+      where: 'id = ?',
+      whereArgs: [template.vehicleId],
+      limit: 1,
     );
 
-    if (vehicleMap.isEmpty) throw Exception('Vehicle not found');
+    if (vehicleMap.isEmpty) {
+      throw ValidationError(localizations.translate('vehicle_not_found'));
+    }
 
     final vehicle = Vehicle.fromMap(vehicleMap.first);
+    final notes = localizations
+        .translate('quick_added_from_template')
+        .replaceAll('{name}', template.name);
 
     final isHomeCharging = template.chargingStationName == null ||
         template.chargingStationName!.isEmpty;
@@ -361,11 +377,10 @@ class _QuickAddTemplateWidgetState extends State<QuickAddTemplateWidget> {
       chargingType: template.chargingType ?? ChargingType.slow,
       stationName: template.chargingStationName,
       address: template.location,
-      notes: 'Quick-added from template: ${template.name}',
+      notes: notes,
     );
 
     // Add to database directly since we don't have charging provider
-    await db.database
-        .then((db) => db.insert('charging_expenses', expense.toMap()));
+    await database.insert('charging_expenses', expense.toMap());
   }
 }

@@ -87,6 +87,8 @@ class AppLocalizations {
       'no_fuel_vehicles_message': 'No petrol/diesel vehicles found.\nElectric vehicles cannot have fuel expenses.',
       'no_vehicles_message': 'No vehicles found. Please add a vehicle first.',
       'select_vehicle': 'Select Vehicle',
+      'vehicle_not_found': 'Vehicle not found',
+      'quick_added_from_template': 'Quick-added from template: {name}',
     },
     'hi': {
       'app_name': 'ईंधन ट्रैकर',
@@ -162,6 +164,8 @@ class AppLocalizations {
       'no_fuel_vehicles_message': 'कोई पेट्रोल/डीजल वाहन नहीं मिला।\nइलेक्ट्रिक वाहनों में ईंधन खर्च नहीं हो सकता।',
       'no_vehicles_message': 'कोई वाहन नहीं मिला। कृपया पहले एक वाहन जोड़ें।',
       'select_vehicle': 'वाहन चुनें',
+      'vehicle_not_found': 'वाहन नहीं मिला',
+      'quick_added_from_template': 'टेम्पलेट से जल्दी जोड़ा गया: {name}',
     },
   };
 

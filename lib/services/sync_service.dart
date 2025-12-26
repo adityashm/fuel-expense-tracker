@@ -42,13 +42,23 @@ class SyncService {
     return _statusController.stream;
   }
 
-  // Check internet connectivity
+  /// Checks if the device has internet connectivity.
+  /// 
+  /// Returns `true` if connected to any network (WiFi, mobile, etc.),
+  /// `false` if offline.
   Future<bool> isOnline() async {
     final result = await _connectivity.checkConnectivity();
     return result != ConnectivityResult.none;
   }
 
-  // Initialize auto-sync
+  /// Initializes automatic background synchronization.
+  /// 
+  /// Sets up a periodic timer that calls [syncAll] at intervals defined by
+  /// [AppConstants.autoSyncInterval]. This is a fire-and-forget operation
+  /// that runs in the background, which is why it's not awaited in main.dart.
+  /// 
+  /// Note: This method returns `void`, not `Future<void>`, as it sets up
+  /// a background timer rather than performing an async operation.
   void startAutoSync() {
     _autoSyncTimer?.cancel();
     _autoSyncTimer = Timer.periodic(
@@ -57,16 +67,25 @@ class SyncService {
     );
   }
 
+  /// Stops automatic background synchronization.
+  /// 
+  /// Cancels the periodic timer if it's running.
   void stopAutoSync() {
     _autoSyncTimer?.cancel();
   }
 
-  // Update sync status
+  /// Updates the current sync status and notifies listeners.
+  /// 
+  /// [newStatus] The new sync status to set.
   void _updateStatus(SyncStatus newStatus) {
     _status = newStatus;
     _statusController.add(newStatus);
   }
 
+  /// Ensures Firebase is authenticated before syncing.
+  /// 
+  /// Attempts to sign in anonymously if not already authenticated.
+  /// Returns `true` if Firebase is ready, `false` if authentication fails.
   Future<bool> _ensureFirebaseReady() async {
     if (_firebase.userId != null) return true;
     try {
@@ -78,7 +97,15 @@ class SyncService {
     }
   }
 
-  // Sync all data with batching to prevent ANR
+  /// Syncs all local data to Firebase with batching to prevent ANR.
+  /// 
+  /// This method:
+  /// - Checks connectivity and Firebase authentication
+  /// - Syncs vehicles, fuel expenses, and general expenses in batches
+  /// - Updates sync status throughout the process
+  /// - Prevents multiple simultaneous syncs
+  /// 
+  /// Returns `true` if sync completed successfully, `false` otherwise.
   Future<bool> syncAll() async {
     if (_isSyncing) return false;
     if (!await isOnline()) {

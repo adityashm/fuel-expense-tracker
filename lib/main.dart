@@ -93,6 +93,8 @@ Future<void> main() async {
     final prefs = await SharedPreferences.getInstance();
 
     try {
+      // NOTE: startAutoSync() returns void (not Future<void>) as it sets up
+      // a background periodic timer. This is intentional fire-and-forget behavior.
       SyncService.instance.startAutoSync();
     } catch (e) {
       debugPrint('Auto-sync initialization error: $e');

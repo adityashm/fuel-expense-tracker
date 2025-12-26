@@ -33,11 +33,49 @@ android {
         multiDexEnabled true
     }
 
-    buildTypes {
+    // Release signing configuration
+    // ⚠️ IMPORTANT: For production builds, you MUST:
+    // 1. Generate a release keystore file (NOT in version control)
+    // 2. Set environment variables BEFORE building:
+    //    - KEYSTORE_PASSWORD: your keystore password
+    //    - KEY_ALIAS: your key alias
+    //    - KEY_PASSWORD: your key password
+    // 3. Place release.keystore in android/app/ directory
+    // Command to generate keystore:
+    //   keytool -genkey -v -keystore release.keystore -alias release_key -keyalg RSA -keysize 2048 -validity 10000
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('debug.keystore')
+            storePassword 'android'
+        }
         release {
+            // These properties should be set via environment variables for security
+            // Never commit the actual keystore file or passwords to version control!
+            if (System.getenv("KEYSTORE_PASSWORD")) {
+                storeFile file('release.keystore')
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS") ?: 'release_key'
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
             signingConfig signingConfigs.debug
             minifyEnabled false
             shrinkResources false
+        }
+        release {
+            // Use release signing config when environment variables are set
+            // Falls back to debug signing if not configured (for development)
+            signingConfig System.getenv("KEYSTORE_PASSWORD") ? signingConfigs.release : signingConfigs.debug
+            // Optimization for release builds
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

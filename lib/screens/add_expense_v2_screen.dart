@@ -75,6 +75,12 @@ class _AddExpenseV2ScreenState extends State<AddExpenseV2Screen> {
     }
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadSuggestions() async {
     // Load suggestions from service
     // _frequentCategories = await _suggestions.getFrequentCategories();

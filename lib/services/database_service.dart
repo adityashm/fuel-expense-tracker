@@ -1,6 +1,11 @@
 import 'dart:developer' as developer;
 
 // ignore_for_file: unused_element
+// NOTE: This directive is used because DatabaseService contains many methods
+// that are called via reflection or dynamically by providers/repositories.
+// The analyzer may not detect all usages, but these methods are actively used.
+// Consider removing this directive and fixing individual unused_element warnings
+// if they appear, as it may hide legitimate unused code.
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
