@@ -2,10 +2,17 @@ name: CD - Build & Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
   release:
     types: [published]
   push:
-    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+    branches: [ main, master ]
     paths:
       - 'pubspec.yaml'
 
@@ -14,41 +21,69 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
     
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.x'
+        flutter-version: '3.24.0'
         channel: 'stable'
     
     - name: Get dependencies
       run: flutter pub get
     
+    - name: Analyze code
+      run: flutter analyze
+    
     - name: Build APK (release)
-      run: flutter build apk --release --no-pub
+      run: flutter build apk --release --split-per-abi
     
     - name: Build AAB (release)
-      run: flutter build appbundle --release --no-pub
+      run: flutter build appbundle --release
+    
+    - name: Get version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        fi
     
     - name: Upload APK to artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: fuel-expense-tracker-release.apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: fuel-expense-tracker-apks-v${{ steps.get_version.outputs.VERSION }}
+        path: |
+          build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          build/app/outputs/flutter-apk/app-x86_64-release.apk
+        retention-days: 90
     
     - name: Upload AAB to artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: fuel-expense-tracker-release.aab
+        name: fuel-expense-tracker-aab-v${{ steps.get_version.outputs.VERSION }}
         path: build/app/outputs/bundle/release/app-release.aab
+        retention-days: 90
     
     - name: Create Release with APK
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
+        name: Release v${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
         files: |
-          build/app/outputs/flutter-apk/app-release.apk
+          build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          build/app/outputs/flutter-apk/app-x86_64-release.apk
           build/app/outputs/bundle/release/app-release.aab
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,45 +92,46 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.x'
+        flutter-version: '3.24.0'
         channel: 'stable'
     
     - name: Get dependencies
       run: flutter pub get
     
     - name: Build Windows app
-      run: flutter build windows --release --no-pub
+      run: flutter build windows --release
     
     - name: Upload Windows build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: fuel-expense-tracker-windows
         path: build/windows/x64/runner/Release/
+        retention-days: 30
 
   code-quality:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.x'
+        flutter-version: '3.24.0'
         channel: 'stable'
     
     - name: Get dependencies
       run: flutter pub get
     
     - name: Analyze code
-      run: flutter analyze --no-pub || true
+      run: flutter analyze
     
     - name: Check for security vulnerabilities
       run: dart pub global activate dartdoc && flutter pub get || true
