@@ -45,9 +45,11 @@ android {
     //   keytool -genkey -v -keystore release.keystore -alias release_key -keyalg RSA -keysize 2048 -validity 10000
     signingConfigs {
         debug {
+            // Use the default Android debug keystore from the user profile
+            // This avoids requiring a debug.keystore inside the project
             keyAlias 'androiddebugkey'
             keyPassword 'android'
-            storeFile file('debug.keystore')
+            storeFile file(System.getenv("ANDROID_DEBUG_KEYSTORE") ?: System.getProperty("user.home") + "/.android/debug.keystore")
             storePassword 'android'
         }
         release {
